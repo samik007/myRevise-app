@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute, Params, Router } from '@angular/router';
-import { FormGroup, FormControl, FormArray, Validators } from '@angular/forms';
+import { FormGroup, FormControl, Validators, FormArray } from '@angular/forms';
+import { ActivatedRoute, Router, Params } from '@angular/router';
 
 import { RecipeService } from '../recipe.service';
 
@@ -10,13 +10,13 @@ import { RecipeService } from '../recipe.service';
   styleUrls: ['./recipe-edit.component.css']
 })
 export class RecipeEditComponent implements OnInit {
-  id: number;
+  recipeForm: FormGroup;
   editMode = false;
-  recipeForm: FormGroup
+  id: number;
 
-  constructor(private route: ActivatedRoute,
-    private recipeService: RecipeService,
-      private router: Router) { }
+  constructor(private recipeService: RecipeService,
+    private route: ActivatedRoute,
+    private router: Router) { }
 
   ngOnInit() {
     this.route.params
@@ -26,7 +26,7 @@ export class RecipeEditComponent implements OnInit {
         this.editMode = params['id'] != null;
         this.initForm();
       }
-      )
+      );
   }
 
   addIngredient() {
@@ -38,14 +38,18 @@ export class RecipeEditComponent implements OnInit {
     )
   }
 
-  private initForm() {
-    let recipeName = '';
-    let recipeImagePath = '';
-    let recipeDescription = '';
+  deleteIngredient(index: number){
+    (<FormArray>this.recipeForm.get('ingredients')).removeAt(index);
+  }
+
+  initForm() {
+    let recipeName = "";
+    let recipeImagePath = "";
+    let recipeDescription = "";
     let recipeIngredients = new FormArray([]);
 
     if (this.editMode) {
-      const recipe = this.recipeService.getRecipeById(this.id);
+      const recipe = this.recipeService.getRecipeByID(this.id);
       recipeName = recipe.name;
       recipeImagePath = recipe.imagePath;
       recipeDescription = recipe.description;
@@ -66,7 +70,7 @@ export class RecipeEditComponent implements OnInit {
       'imagePath': new FormControl(recipeImagePath, Validators.required),
       'description': new FormControl(recipeDescription, Validators.required),
       'ingredients': recipeIngredients
-    })
+    });
   }
 
   onSubmit() {
@@ -78,8 +82,7 @@ export class RecipeEditComponent implements OnInit {
     this.onCancel();
   }
 
-  onCancel(){
+  onCancel() {
     this.router.navigate(['../'], {relativeTo: this.route});
   }
-
 }
